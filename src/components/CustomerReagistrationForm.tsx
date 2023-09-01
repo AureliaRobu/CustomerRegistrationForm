@@ -19,6 +19,7 @@ interface CustomerFormData {
   postalPostCode: string;
   postalCountry: string;
   creditCards: CreditCardData[];
+  interests: string[];
 }
 
 interface CreditCardData {
@@ -53,7 +54,9 @@ type Action =
       type: 'SET_CREDIT_CARD_EXPIRY';
       payload: { index: number; expiryDate: string };
     }
-  | { type: 'SET_CREDIT_CARDS'; payload: CreditCardData[] };
+  | { type: 'SET_CREDIT_CARDS'; payload: CreditCardData[] }
+  | { type: 'DELETE_CREDIT_CARD'; payload: number }
+  | { type: 'SET_INTEREST'; payload: string };
 
 const initialState: CustomerFormData = {
   title: '',
@@ -70,6 +73,7 @@ const initialState: CustomerFormData = {
   postalPostCode: '',
   postalCountry: '',
   creditCards: [],
+  interests: [],
 };
 
 const formReducer = (
@@ -130,6 +134,18 @@ const formReducer = (
       return { ...state, creditCards: updatedCreditCardsWithExpiry };
     case 'SET_CREDIT_CARDS':
       return { ...state, creditCards: action.payload };
+    case 'DELETE_CREDIT_CARD':
+      return {
+        ...state,
+        creditCards: state.creditCards.filter(
+          (_, index) => index !== action.payload
+        ),
+      };
+    case 'SET_INTEREST':
+      const updatedInterests = state.interests.includes(action.payload)
+        ? state.interests.filter((interest) => interest !== action.payload)
+        : [...state.interests, action.payload];
+      return { ...state, interests: updatedInterests };
     default:
       return state;
   }
@@ -153,6 +169,14 @@ function CustomerRegistrationForm({ onSubmit }: CustomerRegistrationFormProps) {
         ],
       });
     }
+  };
+
+  const deleteCreditCard = (index: number) => {
+    dispatch({ type: 'DELETE_CREDIT_CARD', payload: index });
+  };
+
+  const toggleInterest = (interest: string) => {
+    dispatch({ type: 'SET_INTEREST', payload: interest });
   };
 
   return (
@@ -392,7 +416,7 @@ function CustomerRegistrationForm({ onSubmit }: CustomerRegistrationFormProps) {
                     payload: { index, nameOnCard: e.target.value },
                   })
                 }
-                className="border rounded p-2 mb-2"
+                className="border rounded p-2 mb-2 mr-2"
               />
               <input
                 type="text"
@@ -404,7 +428,7 @@ function CustomerRegistrationForm({ onSubmit }: CustomerRegistrationFormProps) {
                     payload: { index, cardNumber: e.target.value },
                   })
                 }
-                className="border rounded p-2 mb-2"
+                className="border rounded p-2 mb-2 mr-2"
               />
               <input
                 type="text"
@@ -416,18 +440,70 @@ function CustomerRegistrationForm({ onSubmit }: CustomerRegistrationFormProps) {
                     payload: { index, expiryDate: e.target.value },
                   })
                 }
-                className="border rounded p-2"
+                className="border rounded p-2 mr-2"
               />
+              <button
+                type="button"
+                className="bg-red-500 text-white px-2 py-1 rounded"
+                onClick={() => deleteCreditCard(index)}
+              >
+                Delete Card
+              </button>
             </div>
           ))}
           <button
             type="button"
             onClick={addCreditCard}
-            className="bg-green-500 text-white px-4 py-2 rounded"
+            className="bg-green-500 text-white px-4 py-2 rounded w-1/12"
             disabled={formData.creditCards.length >= 3}
           >
             Add Credit Card
           </button>
+          <h2 className="text-lg font-semibold mb-2 mt-4">Interests</h2>
+          <label className="block mb-2" htmlFor="checkbox-sports">
+            <input
+              id="checkbox-sports"
+              type="checkbox"
+              value="sports"
+              checked={formData.interests.includes('sports')}
+              onChange={() => toggleInterest('sports')}
+              className="mr-2"
+            />
+            Sports
+          </label>
+          <label className="block mb-2" htmlFor="checkbox-news">
+            <input
+              id="checkbox-news"
+              type="checkbox"
+              value="news"
+              checked={formData.interests.includes('news')}
+              onChange={() => toggleInterest('news')}
+              className="mr-2"
+            />
+            News
+          </label>
+          <label className="block mb-2" htmlFor="checkbox-movies">
+            <input
+              id="checkbox-movies"
+              type="checkbox"
+              value="movies"
+              checked={formData.interests.includes('movies')}
+              onChange={() => toggleInterest('movies')}
+              className="mr-2"
+            />
+            Movies
+          </label>
+          <label className="block mb-2" htmlFor="checkbox-comedy">
+            <input
+              id="checkbox-comedy"
+              type="checkbox"
+              value="comedy"
+              checked={formData.interests.includes('comedy')}
+              onChange={() => toggleInterest('comedy')}
+              className="mr-2"
+            />
+            Comedy
+          </label>
         </div>
         <button
           type="submit"
